@@ -3,6 +3,7 @@
 #include "db/data.h"
 #include "res/Titles.h"
 #include "util/Prefs.h"
+#include "util/StrUtils.h"
 #include "states/ina/InaStateMachines.h"
 #include "ota/OtaUpdater.h"
 
@@ -65,7 +66,7 @@ void Context::init()
     display->setContrast(0x80);
 
     settings->begin();
-    settings->setProjectInfo(UiTitles::WebUi::TITLE);
+    settings->setProjectInfo(StrUtils::read(UiTitles::WebUi::TITLE));
     settings->setUpdatePeriod(1000);
 
     inaMachines->init();

@@ -2,6 +2,7 @@
 
 #include "util/icons.h"
 #include "res/Titles.h"
+#include "util/StrUtils.h"
 
 #include "db/data.h"
 
@@ -121,7 +122,7 @@ void ConnectingWifiState::startWifiAp()
 {
     char name[12];
     prepareWifiName(name, sizeof(name));
-    if (context->wifi->startAp(name, UiTitles::Network::DEFAULT_WIFI_PASS))
+    if (context->wifi->startAp(name, StrUtils::read(UiTitles::Network::DEFAULT_WIFI_PASS)))
     {
         auto apHelp = String(UiTitles::Network::AP_PREFIX) + name;
         auto ipHelp = String(UiTitles::Network::IP_PREFIX) + context->wifi->apIp();
@@ -144,14 +145,16 @@ void ConnectingWifiState::startWifiAp()
 
 const char *ConnectingWifiState::getDescription() const
 {
-    return UiTitles::Messages::CONNECTING_WIFI;
+    return StrUtils::read(UiTitles::Messages::CONNECTING_WIFI);
 }
 
 void ConnectingWifiState::prepareWifiName(char *const source, const size_t size) const
 {
     uint8_t mac[6];
     context->wifi->getMacAddress(mac);
-    snprintf(source, size, "%s%02X%02X%02X", UiTitles::Network::TMP_WIFI_NAME, mac[3], mac[4], mac[5]);
+    {
+        snprintf(source, size, "%s%02X%02X%02X", StrUtils::read(UiTitles::Network::TMP_WIFI_NAME), mac[3], mac[4], mac[5]);
+    }
 }
 
 void ConnectingWifiState::printSerialInfo(const String &apHelp, const String &ipHelp) const

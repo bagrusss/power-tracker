@@ -3,76 +3,71 @@
 #include <GSON.h>
 
 #include "res/Titles.h"
-
-#define JSON_CONTENT "application/json"
-#define PARAM_SERIAL "serial"
+#include "net/JsonKeys.h"
+#include "util/StrUtils.h"
 
 #define CODE_200 200
 #define CODE_404 404
 
-namespace
+static bool hasSerialParam(AsyncWebServerRequest *request, String &out)
 {
-    bool hasSerialParam(AsyncWebServerRequest *request, String &out)
+    const char *paramName = StrUtils::read(HTTP::PARAM_SERIAL);
+    if (request->hasParam(paramName))
     {
-        if (request->hasParam(PARAM_SERIAL))
-        {
-            out = request->getParam(PARAM_SERIAL)->value();
-            return true;
-        }
-        return false;
+        out = request->getParam(paramName)->value();
+        return true;
     }
+    return false;
+}
 
-    void sendJsonResponse(AsyncWebServerRequest *request, int code, gson::Str &gs)
-    {
-        auto response = request->beginResponseStream(JSON_CONTENT);
-        response->setCode(code);
-        response->print(gs);
-        request->send(response);
-    }
+static void sendJsonResponse(AsyncWebServerRequest *request, int code, gson::Str &gs)
+{
+    auto response = request->beginResponseStream(StrUtils::read(HTTP::CONTENT_TYPE));
+    response->setCode(code);
+    response->print(gs);
+    request->send(response);
+}
 
-    void sendSuccessResponse(AsyncWebServerRequest *request, gson::Str &gs)
-    {
-        sendJsonResponse(request, CODE_200, gs);
-    }
+static void sendSuccessResponse(AsyncWebServerRequest *request, gson::Str &gs)
+{
+    sendJsonResponse(request, CODE_200, gs);
+}
 
-    void sendJsonError(AsyncWebServerRequest *const request, int code, const String &message)
+static void sendJsonError(AsyncWebServerRequest *const request, int code, const String &message, gson::Str &gs)
+{
+    gs('{');
+    gs[JKEY::STATUS] = JVAL::ERROR;
+    gs[JKEY::CODE] = code;
+    gs[JKEY::MESSAGE] = message;
+    gs('}');
+    sendJsonResponse(request, code, gs);
+}
+
+static void sendError404(AsyncWebServerRequest *request, gson::Str &gs)
+{
+    sendJsonError(request, CODE_404, StrUtils::read(UiTitles::Messages::DEVICE_NOT_FOUND), gs);
+}
+
+template<typename Handler>
+static void withSerialParam(AsyncWebServerRequest *request, Handler handler, gson::Str &gs)
+{
+    String stateMachineId;
+    if (hasSerialParam(request, stateMachineId))
     {
-        gson::Str gs;
         gs('{');
-        gs["status"] = "error";
-        gs["code"] = code;
-        gs["message"] = message;
+        handler(stateMachineId, gs);
         gs('}');
-        sendJsonResponse(request, code, gs);
+        sendSuccessResponse(request, gs);
     }
-
-    void sendError404(AsyncWebServerRequest *request)
+    else
     {
-        sendJsonError(request, CODE_404, UiTitles::Messages::DEVICE_NOT_FOUND);
-    }
-
-    template<typename Handler>
-    void withSerialParam(AsyncWebServerRequest *request, Handler handler)
-    {
-        String stateMachineId;
-        if (hasSerialParam(request, stateMachineId))
-        {
-            gson::Str doc;
-            doc('{');
-            handler(stateMachineId, doc);
-            doc('}');
-            sendSuccessResponse(request, doc);
-        }
-        else
-        {
-            sendError404(request);
-        }
+        sendError404(request, gs);
     }
 }
 
 HttpRequestsHandler::HttpRequestsHandler(
     AsyncWebServer *const s,
-    CommandsHandler *const h) : server(s), handler(h), printer() {}
+    CommandsHandler *const h) : server(s), handler(h), printer(6144) {}
 
 void HttpRequestsHandler::begin()
 {
@@ -93,35 +88,39 @@ void HttpRequestsHandler::setStatusCallback(StatusCallback cb)
 
 void HttpRequestsHandler::handleStatus(AsyncWebServerRequest *const request)
 {
+    printer.clear();
     withSerialParam(request, [this](const String &stateMachineId, gson::Str &doc) {
         handler->handleStatus(stateMachineId, statusCb, doc);
-    });
+    }, printer);
 }
 
 void HttpRequestsHandler::handleStart(AsyncWebServerRequest *const request)
 {
+    printer.clear();
     withSerialParam(request, [this](const String &stateMachineId, gson::Str &doc) {
         handler->handleStart(stateMachineId, doc);
-    });
+    }, printer);
 }
 
 void HttpRequestsHandler::handleStop(AsyncWebServerRequest *const request)
 {
+    printer.clear();
     withSerialParam(request, [this](const String &stateMachineId, gson::Str &doc) {
         handler->handleStop(stateMachineId, doc);
-    });
+    }, printer);
 }
 
 void HttpRequestsHandler::handleAll(AsyncWebServerRequest *const request)
 {
-    gson::Str doc;
-    doc('{');
-    handler->handleAll(doc);
-    doc('}');
-    sendSuccessResponse(request, doc);
+    printer.clear();
+    printer('{');
+    handler->handleAll(printer);
+    printer('}');
+    sendSuccessResponse(request, printer);
 }
 
 void HttpRequestsHandler::print404(AsyncWebServerRequest *const request)
 {
-    sendError404(request);
+    printer.clear();
+    sendError404(request, printer);
 }
