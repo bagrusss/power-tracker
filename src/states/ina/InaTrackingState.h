@@ -42,10 +42,7 @@ private:
 
     uint16_t measurementInterval = 0;
 
-    bool informAboutResults = false;
-
     void reset();
     void stop();
-    void saveResults(const char *const path);
 
 };
