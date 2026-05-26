@@ -199,30 +199,25 @@ bool OtaUpdater::fetchFirmwareInfo(const String &url, gson::ParserStream &parser
     http.setTimeout(3000);
     context->logger->print("[OtaUpd] ");
     context->logger->println(useSecure ? "run HTTPS GET" : "run HTTP GET");
-
     int httpCode = http.GET();
-    context->logger->print("[OtaUpd] HTTP response code: ");
+    context->logger->print("[OtaUpd] HTTP code: ");
     context->logger->println(httpCode);
-
-    if (httpCode <= 0)
+    if (httpCode != HTTP_CODE_OK)
     {
-        context->logger->print("[OtaUpd] HTTP error: ");
-        context->logger->println(http.errorToString(httpCode).c_str());
-        http.end();
         setError(HTTP_ERROR);
-        return false;
-    }
-
-    WiFiClient &stream = http.getStream();
-    if (!parser.parse(stream))
-    {
-        context->logger->println("[OtaUpd] JSON parse error");
         http.end();
-        setError(JSON_PARSE_ERROR);
         return false;
     }
 
+    if (!parser.parse(&http.getStream(), http.getSize()))
+    {
+        setError(JSON_PARSE_ERROR);
+        http.end();
+        return false;
+    }
     http.end();
+
+    context->logger->println("[OtaUpd] JSON parsed!");
     return true;
 #else
     return false;
@@ -231,42 +226,14 @@ bool OtaUpdater::fetchFirmwareInfo(const String &url, gson::ParserStream &parser
 
 bool OtaUpdater::compareVersions(const String &serverVersion, const int &serverBuild)
 {
-    if (serverBuild > BuildInfo::getBuildNumber())
-    {
-        return true;
-    }
-    if (serverBuild < BuildInfo::getBuildNumber())
-    {
-        return false;
-    }
-    return serverVersion.compareTo(BuildInfo::getVersion()) > 0;
-}
-
-String OtaUpdater::ensureHttpProtocol(const String &url)
-{
-    if (!url.startsWith("http://") && !url.startsWith("https://"))
-    {
-        return "http://" + url;
-    }
-    return url;
-}
-
-String OtaUpdater::addUrlParams(const String &url, const String &params)
-{
-    if (params.length() == 0)
-    {
-        return url;
-    }
-    String result = url;
-    if (url.indexOf('?') > 0)
-    {
-        result += '&';
-    }
-    else
-    {
-        result += '?';
-    }
-    result += params;
+    int currentBuild = BuildInfo::getBuildNumber();
+    bool result = serverBuild > currentBuild;
+    context->logger->print("[OtaUpd] versions: server=");
+    context->logger->print(serverBuild);
+    context->logger->print(" current=");
+    context->logger->print(currentBuild);
+    context->logger->print(" result=");
+    context->logger->println(result ? "true" : "false");
     return result;
 }
 
@@ -277,14 +244,53 @@ void OtaUpdater::resetUpdateInfo()
     updateInfo.buildNumber = 0;
 }
 
+String OtaUpdater::ensureHttpProtocol(const String &url)
+{
+    if (url.length() == 0)
+    {
+        return url;
+    }
+    if (url.startsWith("http://") || url.startsWith("https://"))
+    {
+        return url;
+    }
+    return "http://" + url;
+}
+
+String OtaUpdater::addUrlParams(const String &url, const String &params)
+{
+    if (params.length() == 0)
+    {
+        return url;
+    }
+    String result = url;
+    if (result.indexOf('?') == -1)
+    {
+        result += '?';
+    }
+    else
+    {
+        result += '&';
+    }
+    result += params;
+    return result;
+}
+
 void OtaUpdater::setState(State newState)
 {
+    static const char *stateNames[] = {"IDLE", "CHECKING", "UPDATE_AVAILABLE", "ERROR"};
+    context->logger->print("[OtaUpd] State: ");
+    context->logger->print(stateNames[state]);
+    context->logger->print(" -> ");
+    context->logger->println(stateNames[newState]);
     state = newState;
 }
 
 void OtaUpdater::setError(Error code)
 {
     errorCode = code;
+    context->logger->print("[OtaUpd] Error: ");
+    context->logger->println(getErrorString());
 }
 
 String OtaUpdater::getErrorString() const
@@ -294,7 +300,7 @@ String OtaUpdater::getErrorString() const
     case NONE:
         return "No error";
     case NETWORK_ERROR:
-        return "Network error";
+        return "Network error (WiFi not connected)";
     case HTTP_ERROR:
         return "HTTP error";
     case JSON_PARSE_ERROR:

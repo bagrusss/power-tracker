@@ -68,6 +68,9 @@ void Context::init()
     settings->begin();
     settings->setProjectInfo(StrUtils::read(UiTitles::WebUi::TITLE));
     settings->setUpdatePeriod(1000);
+    static char fwBuf[64];
+    BuildInfo::getFullVersion(fwBuf, sizeof(fwBuf));
+    settings->setVersion(fwBuf);
 
     inaMachines->init();
 

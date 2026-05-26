@@ -2,6 +2,7 @@
 #include "Context.h"
 #include "db/data.h"
 #include "res/Titles.h"
+#include "net/JsonKeys.h"
 #include <GSON.h>
 
 InaStateMachines::InaStateMachines(Context *const context)
@@ -137,7 +138,7 @@ String InaStateMachines::getSensorId(uint8_t address) const
 
 void InaStateMachines::getAllSensorsInfo(gson::Str &doc) const
 {
-    doc["sensors"]('[');
+    doc[JKEY::SENSORS]('[');
     for (const auto &pair : inaStateMachines)
     {
         uint8_t address = pair.first;
@@ -145,9 +146,9 @@ void InaStateMachines::getAllSensorsInfo(gson::Str &doc) const
         if (!machine) continue;
 
         doc('{');
-        doc["address"] = address;
-        doc["serial"] = getSensorId(address);
-        doc["state"] = machine->isBusy() ? "tracking" : "idle";
+        doc[JKEY::ADDRESS] = address;
+        doc[JKEY::SERIAL_NUM] = getSensorId(address);
+        doc[JKEY::STATE] = machine->isBusy() ? JVAL::TRACKING : JVAL::IDLE;
         doc('}');
     }
     doc(']');

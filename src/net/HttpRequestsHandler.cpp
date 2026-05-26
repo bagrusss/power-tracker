@@ -69,6 +69,11 @@ HttpRequestsHandler::HttpRequestsHandler(
     AsyncWebServer *const s,
     CommandsHandler *const h) : server(s), handler(h), printer(6144) {}
 
+static void clearJson(gson::Str &gs)
+{
+    gs.clear();
+}
+
 void HttpRequestsHandler::begin()
 {
     server->on("/status", WebRequestMethod::HTTP_GET, [this](AsyncWebServerRequest *request)
@@ -88,7 +93,7 @@ void HttpRequestsHandler::setStatusCallback(StatusCallback cb)
 
 void HttpRequestsHandler::handleStatus(AsyncWebServerRequest *const request)
 {
-    printer.clear();
+    clearJson(printer);
     withSerialParam(request, [this](const String &stateMachineId, gson::Str &doc) {
         handler->handleStatus(stateMachineId, statusCb, doc);
     }, printer);
@@ -96,7 +101,7 @@ void HttpRequestsHandler::handleStatus(AsyncWebServerRequest *const request)
 
 void HttpRequestsHandler::handleStart(AsyncWebServerRequest *const request)
 {
-    printer.clear();
+    clearJson(printer);
     withSerialParam(request, [this](const String &stateMachineId, gson::Str &doc) {
         handler->handleStart(stateMachineId, doc);
     }, printer);
@@ -104,7 +109,7 @@ void HttpRequestsHandler::handleStart(AsyncWebServerRequest *const request)
 
 void HttpRequestsHandler::handleStop(AsyncWebServerRequest *const request)
 {
-    printer.clear();
+    clearJson(printer);
     withSerialParam(request, [this](const String &stateMachineId, gson::Str &doc) {
         handler->handleStop(stateMachineId, doc);
     }, printer);
@@ -112,7 +117,7 @@ void HttpRequestsHandler::handleStop(AsyncWebServerRequest *const request)
 
 void HttpRequestsHandler::handleAll(AsyncWebServerRequest *const request)
 {
-    printer.clear();
+    clearJson(printer);
     printer('{');
     handler->handleAll(printer);
     printer('}');
@@ -121,6 +126,6 @@ void HttpRequestsHandler::handleAll(AsyncWebServerRequest *const request)
 
 void HttpRequestsHandler::print404(AsyncWebServerRequest *const request)
 {
-    printer.clear();
+    clearJson(printer);
     sendError404(request, printer);
 }

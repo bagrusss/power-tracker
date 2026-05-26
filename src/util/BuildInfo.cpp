@@ -1,4 +1,6 @@
 #include "BuildInfo.h"
+#include <stdio.h>
+#include <string.h>
 
 namespace BuildInfo
 {
@@ -22,8 +24,13 @@ namespace BuildInfo
         return BUILD_NUMBER;
     }
 
-    String getFullVersion()
+    void getFullVersion(char *buf, const size_t &size)
     {
-        return String(BUILD_VERSION) + '_' + BUILD_PLATFORM + '_' + BUILD_TYPE + '_' + String(BUILD_NUMBER);
+        char ver[16], plat[16], type[16];
+        strcpy_P(ver, PSTR(BUILD_VERSION));
+        strcpy_P(plat, PSTR(BUILD_PLATFORM));
+        strcpy_P(type, PSTR(BUILD_TYPE));
+        snprintf(buf, size, "%s_%s_%s_%d", ver, plat, type, BUILD_NUMBER);
     }
+
 }
