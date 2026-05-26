@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-Generate BuildInfo.h from platformio.ini and environment variables.
+Generate BuildInfo.h and BuildInfo.cpp from platformio.ini and environment variables.
 This script is intended to be run as a pre-build script in PlatformIO.
+
+Automatically increments build_number on each run.
 """
 
 import configparser
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -18,6 +21,8 @@ except NameError:
 
 PLATFORMIO_INI = PROJECT_DIR / "platformio.ini"
 BUILDINFO_H = PROJECT_DIR / "src/util/BuildInfo.h"
+BUILDINFO_CPP = PROJECT_DIR / "src/util/BuildInfo.cpp"
+
 
 def get_platform_from_env(env_name, config):
     """Map PlatformIO environment name to platform string."""
@@ -38,15 +43,49 @@ def get_platform_from_env(env_name, config):
         return "ESP32"
     return "Unknown"
 
+
+def increment_build_number(config):
+    """
+    Increment build_number in platformio.ini.
+    Uses regex to preserve formatting (spaces, comments).
+    """
+    build_number = int(config.get("env", "build_number", fallback="1"))
+
+    # Read raw file content
+    raw = PLATFORMIO_INI.read_text(encoding="utf-8")
+
+    # Match build_number = <value> in the [env] section
+    pattern = re.compile(
+        r'^(\s*build_number\s*=\s*)(\d+)(\s*;.*)?$',
+        re.MULTILINE
+    )
+
+    new_number = build_number + 1
+
+    def replacer(m):
+        return m.group(1) + str(new_number) + (m.group(3) or "")
+
+    new_raw, count = pattern.subn(replacer, raw, count=1)
+
+    if count == 0:
+        print("Warning: build_number not found in platformio.ini, appending")
+        new_raw += f"\nbuild_number = {new_number}\n"
+
+    PLATFORMIO_INI.write_text(new_raw, encoding="utf-8")
+    return new_number
+
+
 def main():
     # Read platformio.ini
     config = configparser.ConfigParser()
     config.read(PLATFORMIO_INI)
 
-    # Get version, build_type, build_number from [env] section
+    # Get version, build_type from [env] section
     version = config.get("env", "version", fallback="1.0.0")
     build_type = config.get("env", "build_type", fallback="debug")
-    build_number = config.get("env", "build_number", fallback="1")
+
+    # Auto-increment build_number
+    build_number = increment_build_number(config)
 
     # Determine platform from PLATFORMIO_ENV environment variable
     env_name = os.getenv("PLATFORMIO_ENV", "")
@@ -64,8 +103,8 @@ def main():
                     platform = "ESP32"
                     break
 
-    # Generate BuildInfo.h content
-    content = f"""#pragma once
+    # Generate BuildInfo.h content (declarations only)
+    header_content = f"""#pragma once
 
 #include <Arduino.h>
 
@@ -86,32 +125,56 @@ def main():
 #endif
 
 namespace BuildInfo {{
-    const char* getVersion() {{
+    const char* getVersion();
+    const char* getPlatform();
+    const char* getBuildType();
+    int getBuildNumber();
+    void getFullVersion(char *buf, const size_t &size);
+}}
+"""
+
+    # Generate BuildInfo.cpp content (implementations)
+    source_content = f"""#include "BuildInfo.h"
+#include <stdio.h>
+#include <string.h>
+
+namespace BuildInfo
+{{
+    const char *getVersion()
+    {{
         return BUILD_VERSION;
     }}
 
-    const char* getPlatform() {{
+    const char *getPlatform()
+    {{
         return BUILD_PLATFORM;
     }}
 
-    const char* getBuildType() {{
+    const char *getBuildType()
+    {{
         return BUILD_TYPE;
     }}
 
-    int getBuildNumber() {{
+    int getBuildNumber()
+    {{
         return BUILD_NUMBER;
     }}
 
-    String getFullVersion() {{
-        return String(BUILD_VERSION) + '_' + BUILD_PLATFORM + '_' + BUILD_TYPE + '_' + String(BUILD_NUMBER);
+    void getFullVersion(char *buf, const size_t &size)
+    {{
+        snprintf(buf, size, "%s_%s_%s_%d",
+                 BUILD_VERSION, BUILD_PLATFORM, BUILD_TYPE, BUILD_NUMBER);
     }}
 }}
 """
 
-    # Write to file
+    # Write to files
     BUILDINFO_H.parent.mkdir(parents=True, exist_ok=True)
-    BUILDINFO_H.write_text(content, encoding="utf-8")
+    BUILDINFO_H.write_text(header_content, encoding="utf-8")
+    BUILDINFO_CPP.write_text(source_content, encoding="utf-8")
     print(f"Generated {BUILDINFO_H} with version={version}, platform={platform}, build_type={build_type}, build_number={build_number}")
+    print(f"Generated {BUILDINFO_CPP}")
+
 
 if __name__ == "__main__":
     main()

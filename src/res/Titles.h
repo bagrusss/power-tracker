@@ -1,144 +1,137 @@
 #pragma once
 
+#include <Arduino.h>
+
 namespace UiTitles
 {
 
-    constexpr const char *const NO_POWER_MONITOR = "No power monitors found";
+#define DEFINE_TITLE(name, str) \
+    static constexpr char _##name[] PROGMEM = str; \
+    const __FlashStringHelper * const name = reinterpret_cast<const __FlashStringHelper*>(_##name)
 
-    constexpr const char *const CAPACITY = "Capacity, %";
-    constexpr const char *const CURRENT = "Current";
-    constexpr const char *const VOLTAGE = "Voltage";
-    constexpr const char *const VOLTAGE_SHUNT = "Voltage shunt";
-    constexpr const char *const POWER = "Power";
+    DEFINE_TITLE(NO_POWER_MONITOR, "No power monitors found");
 
-    constexpr const char *const TOTAL_CURRENT = "Total current";
-    constexpr const char *const TOTAL_ENERGY = "Total energy";
-    constexpr const char *const MAX_POWER = "Max power";
-    constexpr const char *const MAX_CURRENT = "Max current";
-    constexpr const char *const MIN_VOLTAGE = "Min voltage";
-    constexpr const char *const TRACKING_TIME = "Tracking time";
+    DEFINE_TITLE(CAPACITY, "Capacity, %");
+    DEFINE_TITLE(CURRENT, "Current");
+    DEFINE_TITLE(VOLTAGE, "Voltage");
 
-    constexpr const char *const SSID = "SSID";
-    constexpr const char *const PASSWORD = "Password";
+    DEFINE_TITLE(TOTAL_CURRENT, "Total current");
+    DEFINE_TITLE(TOTAL_ENERGY, "Total energy");
+    DEFINE_TITLE(MAX_POWER, "Max power");
+    DEFINE_TITLE(MAX_CURRENT, "Max current");
+    DEFINE_TITLE(MIN_VOLTAGE, "Min voltage");
+    DEFINE_TITLE(TRACKING_TIME, "Tracking time");
 
-    constexpr const char *const DEVICE_NAME = "Name";
-    constexpr const char *const DEVICE_OS = "OS";
-    constexpr const char *const DEVICE_SN = "Serial Number";
-    constexpr const char *const DEVICE_STATUS = "Status";
+    DEFINE_TITLE(SSID, "SSID");
+    DEFINE_TITLE(PASSWORD, "Password");
+
+    DEFINE_TITLE(DEVICE_NAME, "Name");
+    DEFINE_TITLE(DEVICE_OS, "OS");
+    DEFINE_TITLE(DEVICE_SN, "Serial Number");
+    DEFINE_TITLE(DEVICE_STATUS, "Status");
 
     namespace WebUi
     {
-        constexpr const char *const TITLE = "Power tracker";
+        DEFINE_TITLE(TITLE, "Power tracker");
     }
 
     namespace Groups
     {
-        constexpr const char *const MEASURMENT = "Measurment";
-        constexpr const char *const DEVICE_INFO = "Device info";
-        constexpr const char *const WIFI_SETTINGS = "Wi-Fi settings";
-        constexpr const char *const CURCIUT_PARAMS = "Curciut params";
-        constexpr const char *const UPDATES = "Updates";
-        constexpr const char *const BOARD_CONFIG = "Board Config";
-
-        constexpr const char *const POWER_STATE = "Power state";
-        constexpr const char *const WIFI_CONFIG = "Wi-Fi config";
+        DEFINE_TITLE(DEVICE_INFO, "Device info");
+        DEFINE_TITLE(WIFI_SETTINGS, "Wi-Fi settings");
+        DEFINE_TITLE(CURCIUT_PARAMS, "Curciut params");
+        DEFINE_TITLE(UPDATES, "Updates");
+        DEFINE_TITLE(BOARD_CONFIG, "Board Config");
+        DEFINE_TITLE(WIFI_CONFIG, "Wi-Fi config");
     }
 
     namespace UiButtons
     {
-        constexpr const char *const STOP = "Stop";
-        constexpr const char *const RESTART = "Restart";
-        constexpr const char *const BACK = "Back";
-        constexpr const char *const SETTINGS = "Settings";
-        constexpr const char *const TRACK = "Track";
-        constexpr const char *const APPLY = "Apply";
-        constexpr const char *const SKIP = "Skip";
-        constexpr const char *const APPLY_AND_REBOOT = "Apply and Reboot";
+        DEFINE_TITLE(STOP, "Stop");
+        DEFINE_TITLE(RESTART, "Restart");
+        DEFINE_TITLE(BACK, "Back");
+        DEFINE_TITLE(SETTINGS, "Settings");
+        DEFINE_TITLE(TRACK, "Track");
+        DEFINE_TITLE(APPLY, "Apply");
+        DEFINE_TITLE(SKIP, "Skip");
+        DEFINE_TITLE(APPLY_AND_REBOOT, "Apply and Reboot");
     }
 
     namespace Messages
     {
-        constexpr const char *const SETTED_UP = "setted up!";
-        constexpr const char *const CONNECTING_TO_WIFI = "Connecting to WiFi...";
-        constexpr const char *const CONNECTING_TO = "Connecting to ";
-        constexpr const char *const CONNECTED_TO_WIFI_IP = "Connected to WiFi. IP: ";
-        constexpr const char *const FAILED_TO_CONNECT_TO = "Failed to connect to ";
-        constexpr const char *const COULDNT_UP_AP = "Couldn't up AP!";
-        constexpr const char *const CONNECTING_WIFI = "Connecting Wi-Fi";
+        DEFINE_TITLE(SETTED_UP, "setted up!");
+        DEFINE_TITLE(CONNECTING_TO_WIFI, "Connecting to WiFi...");
+        DEFINE_TITLE(CONNECTING_TO, "Connecting to ");
+        DEFINE_TITLE(CONNECTED_TO_WIFI_IP, "Connected to WiFi. IP: ");
+        DEFINE_TITLE(FAILED_TO_CONNECT_TO, "Failed to connect to ");
+        DEFINE_TITLE(COULDNT_UP_AP, "Couldn't up AP!");
+        DEFINE_TITLE(CONNECTING_WIFI, "Connecting Wi-Fi");
 
-        constexpr const char *const INA_NOT_FOUND = "No INA not found";
-        constexpr const char *const DEVICE_NOT_FOUND = "Device not found";
+        DEFINE_TITLE(INA_NOT_FOUND, "No INA not found");
+        DEFINE_TITLE(DEVICE_NOT_FOUND, "Device not found");
         
-        constexpr const char *const OTA_INSTALLING = "UPD: installing";
-        constexpr const char *const OTA_SUCCESS = "UPD: Success!";
-        constexpr const char *const OTA_FAILED = "UPD: Failed!";
+        DEFINE_TITLE(OTA_INSTALLING, "UPD: installing");
+        DEFINE_TITLE(OTA_SUCCESS, "UPD: Success!");
+        DEFINE_TITLE(OTA_FAILED, "UPD: Failed!");
     }
 
     namespace FileNames
     {
-        constexpr const char *const DATA_DB = "/data.db";
-        constexpr const char *const RESULTS_JSON = "/results.json";
-        constexpr const char *const RESULTS_SENSOR_PREFIX = "/results_sensor_";
-        constexpr const char *const SETTINGS_PREFIX = "/settings_0x";
+        DEFINE_TITLE(DATA_DB, "/data.db");
+        DEFINE_TITLE(SETTINGS_PREFIX, "/settings_0x");
     }
 
     namespace Network
     {
-        constexpr const char *const TMP_WIFI_NAME = "PT_";
-        constexpr const char *const DEFAULT_WIFI_PASS = "vk_testlab";
-        constexpr const char *const AP_PREFIX = "AP: ";
-        constexpr const char *const IP_PREFIX = "IP: ";
+        DEFINE_TITLE(TMP_WIFI_NAME, "PT_");
+        DEFINE_TITLE(DEFAULT_WIFI_PASS, "vk_testlab");
+        DEFINE_TITLE(AP_PREFIX, "AP: ");
+        DEFINE_TITLE(IP_PREFIX, "IP: ");
     }
 
     namespace Sensor
     {
-        constexpr const char *const SENSOR_PREFIX = "Sensor 0x";
-        constexpr const char *const TRACKING_SENSOR_PREFIX = "Tracking Sensor 0x";
-        constexpr const char *const SENSOR_STATUS = "Sensor Status";
-        constexpr const char *const SENSOR_NOT_AVAILABLE = "Sensor not available";
-        constexpr const char *const RESULTS_SAVED_TO = "Results saved to ";
-        constexpr const char *const RESULTS_WERE_SAVED = "The results were saved into file ";
+        DEFINE_TITLE(SENSOR_STATUS, "Sensor Status");
+        DEFINE_TITLE(SENSOR_NOT_AVAILABLE, "Sensor not available");
     }
 
     namespace Settings
     {
-        constexpr const char *const FULL_CAPACITY = "Full capacity";
-        constexpr const char *const MIN_VOLTAGE_V = "Min Voltage, V";
-        constexpr const char *const MAX_VOLTAGE_V = "Max Voltage, V";
-        constexpr const char *const POWER_STRATEGY = "Power Strategy";
-        constexpr const char *const BATTERY = "Battery";
-        constexpr const char *const POWER_SOURCE = "Power Source";
-        constexpr const char *const SHUNT_RESISTANCE_OHM = "Shunt resistance, Ω";
-        constexpr const char *const MAX_CURRENT_A = "Max current, A";
-        constexpr const char *const MEASUREMENT_INTERVAL_MS = "Measurement interval, ms";
-        constexpr const char *const INA_DEVICE = "INA device";
-        constexpr const char *const INA_I2C_ADDRESS = "INA I2C address";
-        constexpr const char *const CURRENT_CORRECTION = "Current kFactor";
-        constexpr const char *const VOLTAGE_CORRECTION = "Voltage kFactor";
-        constexpr const char *const I2C_FREQUENCY = "I2C Frequency, kHz";
+        DEFINE_TITLE(FULL_CAPACITY, "Full capacity");
+        DEFINE_TITLE(MIN_VOLTAGE_V, "Min Voltage, V");
+        DEFINE_TITLE(MAX_VOLTAGE_V, "Max Voltage, V");
+        DEFINE_TITLE(POWER_STRATEGY, "Power Strategy");
+        DEFINE_TITLE(SHUNT_RESISTANCE_OHM, "Shunt resistance, Ω");
+        DEFINE_TITLE(MAX_CURRENT_A, "Max current, A");
+        DEFINE_TITLE(MEASUREMENT_INTERVAL_MS, "Measurement interval, ms");
+        DEFINE_TITLE(INA_DEVICE, "INA device");
+        DEFINE_TITLE(CURRENT_CORRECTION, "Current kFactor");
+        DEFINE_TITLE(VOLTAGE_CORRECTION, "Voltage kFactor");
+        DEFINE_TITLE(I2C_FREQUENCY, "I2C Frequency, kHz");
     }
 
     namespace Updates
     {
-        constexpr const char *const AUTO_UPDATE = "Auto-update";
-        constexpr const char *const CHECK_INTERVAL = "Check interval";
-        constexpr const char *const UPDATE_URL = "Update URL";
-        constexpr const char *const URL_PARAMS = "URL params";
-        constexpr const char *const CURRENT_VERSION_LABEL = "Current version: ";
-        constexpr const char *const AVAILABLE_VERSION_LABEL = "Available version: ";
-        constexpr const char *const BUILD_NUMBER_LABEL = "Build number: ";
-        constexpr const char *const CHECK_FOR_UPDATES = "Check for updates";
-        constexpr const char *const INSTALL = "Install";
-        constexpr const char *const UPGRADE = "Upgrade";
-        constexpr const char *const INSTALL_UPDATE_LABEL = "Install update";
-        constexpr const char *const INTERVAL_OPTIONS = "Never;Every hour;Every 6 hours;Every 12 hours;Every 24 hours";
+        DEFINE_TITLE(AUTO_UPDATE, "Auto-update");
+        DEFINE_TITLE(CHECK_INTERVAL, "Check interval");
+        DEFINE_TITLE(UPDATE_URL, "Update URL");
+        DEFINE_TITLE(URL_PARAMS, "URL params");
+        DEFINE_TITLE(CURRENT_VERSION_LABEL, "Current version: ");
+        DEFINE_TITLE(BUILD_NUMBER_LABEL, "Build number: ");
+        DEFINE_TITLE(CHECK_FOR_UPDATES, "Check for updates");
+        DEFINE_TITLE(UPGRADE, "Upgrade");
+        DEFINE_TITLE(INSTALL_UPDATE_LABEL, "Install update");
+        DEFINE_TITLE(INTERVAL_OPTIONS, "Never;Every hour;Every 6 hours;Every 12 hours;Every 24 hours");
     }
 
     namespace DefaultValues
     {
-        constexpr const char *const DEFAULT_NAME = "Undef";
-        constexpr const char *const DEFAULT_NAN = "Nan";
-        constexpr const char *const SN_PREFIX = "SN_";
+        // RAM-версии для db->init() и String конкатенации
+        static constexpr char DEFAULT_NAME[] = "Undef";
+        static constexpr char DEFAULT_NAN[] = "Nan";
+        static constexpr char SN_PREFIX[] = "SN_";
     }
+
+#undef DEFINE_TITLE
 
 }
