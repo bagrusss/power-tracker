@@ -2,11 +2,8 @@
 
 #include <GSON.h>
 
-#include "res/Titles.h"
-
-#define CMD_START "start"
-#define CMD_STOP "stop"
-#define CMD_STATUS "status"
+#include "net/JsonKeys.h"
+#include "util/StrUtils.h"
 
 CommandsHandler::CommandsHandler(InaStateMachines *const inaMachines) : inaMachines(inaMachines) {}
 
@@ -17,9 +14,9 @@ InaStateMachine *CommandsHandler::getMachine(const String &id) const
 
 void CommandsHandler::fillSuccessResponse(const String &operation, const String &stateMachineId, gson::Str &doc)
 {
-    doc["result"] = 1;
-    doc["operation"] = operation;
-    doc["serial"] = stateMachineId;
+    doc[JKEY::RESULT] = 1;
+    doc[JKEY::OPERATION] = operation;
+    doc[JKEY::SERIAL_NUM] = stateMachineId;
 }
 
 void CommandsHandler::collectStatusInfo(const String &stateMachineId, InaStateMachine *machine, gson::Str &doc)
@@ -38,7 +35,7 @@ void CommandsHandler::handleStatus(const String &stateMachineId, StatusCallback 
     {
         return;
     }
-    fillSuccessResponse(CMD_STATUS, stateMachineId, doc);
+    fillSuccessResponse(StrUtils::read(HTTP::CMD_STATUS), stateMachineId, doc);
     collectStatusInfo(stateMachineId, machine, doc);
     if (cb)
     {
@@ -54,7 +51,7 @@ void CommandsHandler::handleStart(const String &stateMachineId, gson::Str &doc)
         machine->switchState((size_t)InaStateType::Tracking);
     }
 
-    fillSuccessResponse(CMD_START, stateMachineId, doc);
+    fillSuccessResponse(StrUtils::read(HTTP::CMD_START), stateMachineId, doc);
 }
 
 void CommandsHandler::handleStop(const String &stateMachineId, gson::Str &doc)
@@ -65,7 +62,7 @@ void CommandsHandler::handleStop(const String &stateMachineId, gson::Str &doc)
         collectStatusInfo(stateMachineId, machine, doc);
         machine->switchState((size_t)InaStateType::Idle);
     }
-    fillSuccessResponse(CMD_STOP, stateMachineId, doc);
+    fillSuccessResponse(StrUtils::read(HTTP::CMD_STOP), stateMachineId, doc);
 }
 
 void CommandsHandler::handleAll(gson::Str &doc)

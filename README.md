@@ -412,7 +412,7 @@ src/
 | Состояние | Класс | Описание |
 |-----------|-------|----------|
 | `Idle` | [`InaIdleState`](src/states/ina/InaIdleState.cpp) | Отображение мгновенных значений: напряжение (V), ток (mA), мощность (mW), напряжение на шунте (mV). Отображение статуса батареи (заряжается/разряжается/заряжена/разряжена) или источника питания. |
-| `Tracking` | [`InaTrackingState`](src/states/ina/InaTrackingState.cpp) | Активное измерение с накоплением: totalCurrent (mAh), totalPower (mWh), maxCurrent, maxPower, minVoltage. При остановке результаты сохраняются в файл `/results_<addr>.json`. |
+| `Tracking` | [`InaTrackingState`](src/states/ina/InaTrackingState.cpp) | Активное измерение с накоплением: totalCurrent (mAh), totalPower (mWh), maxCurrent, maxPower, minVoltage. При остановке через /stop результаты измерений одтаются в ответе |
 
 ## Эксплуатация
 
@@ -451,8 +451,6 @@ src/
 ### 3. Режим измерения
 
 <img src="docs/4/tracking.png" width="500">
-
-При управлении трекером через веб-интерфейс при остановке измерения результаты сохраняются в `/results_<addr>.json`, где `<addr>` — адрес датчика на шине I2C [0x40..0x4F]
 
 Подробнее: [Режим измерения](docs/4/4.md)
 

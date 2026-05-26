@@ -13,6 +13,7 @@
 #include "Context.h"
 #include "states/mc/McStateMachine.h"
 #include "db/data.h"
+#include "util/StrUtils.h"
 #include "api/PowerMonitor.h"
 
 #include "states/mc/ConnectingWifiState.h"
@@ -129,7 +130,7 @@ void setup()
   Serial.begin(115200);
   Serial.println();
 
-  auto db = new GyverDBFile(&LittleFS, UiTitles::FileNames::DATA_DB);
+  auto db = new GyverDBFile(&LittleFS, StrUtils::read(UiTitles::FileNames::DATA_DB));
   initDb(db);
 
   auto logger = &Serial;
@@ -145,7 +146,7 @@ void setup()
   auto monitors = detector.detectDevices(0x40, 0x40 + 15, db);
 
   auto wifiAdapter = new EspWifiAdapter(logger);
-  auto webUi = new WebUi(UiTitles::WebUi::TITLE, db);
+  auto webUi = new WebUi(StrUtils::read(UiTitles::WebUi::TITLE), db);
 
   context = initContext(wifiAdapter, monitors, webUi, db, logger, board);
 

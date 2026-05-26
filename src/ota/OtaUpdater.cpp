@@ -33,16 +33,15 @@ static size_t indexToSeconds(uint8_t index)
     }
 }
 
-OtaUpdater::OtaUpdater(Context *const context): context(context) {}
+OtaUpdater::OtaUpdater(Context *const context) : context(context) {}
 
 void OtaUpdater::begin()
 {
     size_t index = context->db->get(OTA_CONFIG::check_interval);
     size_t intervalSec = indexToSeconds(index);
     setCheckInterval(intervalSec * 1000);
-    bool isEnabled = context->db->get(OTA_CONFIG::auto_update_enabled);
-    setAutoUpgrade(isEnabled);
 
+    autoUpgradeEnabled = context->db->get(OTA_CONFIG::auto_update_enabled);
     lastCheckTime = millis();
     resetUpdateInfo();
 }
@@ -71,7 +70,7 @@ void OtaUpdater::tick()
         return;
     }
 
-    if (checkIntervalMs == 0)
+    if (!autoUpgradeEnabled || checkIntervalMs == 0)
     {
         return;
     }
@@ -105,7 +104,8 @@ void OtaUpdater::checkForUpdates()
 
     String serverUrl = context->db->get(OTA_CONFIG::server_url);
     String urlParams = context->db->get(OTA_CONFIG::url_params);
-    if (urlParams.length() > 0) {
+    if (urlParams.length() > 0)
+    {
         serverUrl = addUrlParams(serverUrl, urlParams);
     }
     context->logger->print("[OtaUpd] URL: ");
@@ -134,7 +134,8 @@ void OtaUpdater::checkForUpdates()
         updateInfo.version = version;
         updateInfo.buildNumber = buildNumber;
         String url = parser[BuildInfo::getPlatform()];
-        if (urlParams.length() > 0) {
+        if (urlParams.length() > 0)
+        {
             url = addUrlParams(url, urlParams);
         }
         updateInfo.firmwareUrl = url;

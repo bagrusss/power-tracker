@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "api/PixelDisplay.h"
 #include "res/Titles.h"
+#include "net/JsonKeys.h"
 #include "util/icons.h"
 
 #define UPT_PROGRESS 1678
@@ -51,10 +52,10 @@ void OtaUpdatingState::updateUi(sets::Updater &upd)
 
 void OtaUpdatingState::printStatus(gson::Str &printer) const
 {
-    printer["state"] = "ota_updating";
-    printer["progress"] = lastProgress;
-    printer["finished"] = upgradeFinished;
-    printer["success"] = upgradeSuccess;
+    printer[JKEY::STATE] = JVAL::OTA_UPDATING;
+    printer[JKEY::PROGRESS] = lastProgress;
+    printer[JKEY::FINISHED] = upgradeFinished ? 1 : 0;
+    printer[JKEY::SUCCESS] = upgradeSuccess ? 1 : 0;
 }
 
 const char *OtaUpdatingState::getDescription() const

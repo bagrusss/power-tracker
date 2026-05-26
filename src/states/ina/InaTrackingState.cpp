@@ -4,6 +4,7 @@
 #include "db/data.h"
 #include "util/Util.h"
 #include "res/Titles.h"
+#include "net/JsonKeys.h"
 
 #define HOUR_MS 3600000.0f
 
@@ -72,14 +73,6 @@ void InaTrackingState::updateUi(sets::Updater &upd)
     upd.update(TRACKING_VALUES::maxPower, withUnit(this->maxPower, UNIT_mW, UNIT_W));
     upd.update(TRACKING_VALUES::minVoltage, withUnit(this->minVoltage, UNIT_V));
 
-    if (informAboutResults)
-    {
-        informAboutResults = false;
-        String filename = UiTitles::FileNames::RESULTS_SENSOR_PREFIX;
-        filename += String(stateMachine->getSensorAddress(), HEX);
-        filename += ".json";
-        upd.notice(String(UiTitles::Sensor::RESULTS_SAVED_TO) + filename);
-    }
 }
 
 void InaTrackingState::onEnter()
@@ -136,21 +129,21 @@ void InaTrackingState::printStatus(gson::Str &printer) const
     InaState::printStatus(printer);
 
     auto totalTime = endTime - startTime;
-    printer["totalTime"] = totalTime / 1000;
-    printer["sensorAddr"] = stateMachine->getSensorAddress();
+    printer[JKEY::TOTAL_TIME] = totalTime / 1000;
+    printer[JKEY::SENSOR_ADDR] = stateMachine->getSensorAddress();
 
-    printer["currentCurrent"] = currentCurrent;
-    printer["totalCurrent"] = totalCurrent;
-    printer["maxCurrent"] = maxCurrent;
+    printer[JKEY::CURRENT_CURRENT] = currentCurrent;
+    printer[JKEY::TOTAL_CURRENT] = totalCurrent;
+    printer[JKEY::MAX_CURRENT] = maxCurrent;
 
-    printer["currentVoltage"] = currentVoltage;
-    printer["minVoltage"] = minVoltage;
+    printer[JKEY::CURRENT_VOLTAGE] = currentVoltage;
+    printer[JKEY::MIN_VOLTAGE] = minVoltage;
 
-    printer["currentPower"] = currentPower;
-    printer["totalPower"] = totalPower;
-    printer["maxPower"] = maxPower;
+    printer[JKEY::CURRENT_POWER] = currentPower;
+    printer[JKEY::TOTAL_POWER] = totalPower;
+    printer[JKEY::MAX_POWER] = maxPower;
 
-    printer["interval"] = measurementInterval;
+    printer[JKEY::INTERVAL] = measurementInterval;
 }
 
 InaStateType InaTrackingState::getStateType() const
@@ -181,34 +174,6 @@ void InaTrackingState::reset()
 void InaTrackingState::stop()
 {
     endTime = millis();
-    informAboutResults = true;
-
-    String filename = UiTitles::FileNames::RESULTS_SENSOR_PREFIX;
-    filename += String(stateMachine->getSensorAddress(), HEX);
-    filename += ".json";
-    saveResults(const_cast<char *>(filename.c_str()));
-}
-
-void InaTrackingState::saveResults(const char *const path)
-{
-    gson::Str res;
-    printStatus(res);
-
-    if (LittleFS.exists(path))
-    {
-        LittleFS.remove(path);
-    }
-
-    File file = LittleFS.open(path, "w");
-    if (file)
-    {
-        file.print(res);
-        file.close();
-    }
-    else
-    {
-        context->logger->println("Failed to open file for writing");
-    }
 }
 
 const char *InaTrackingState::getDescription() const

@@ -1,5 +1,6 @@
 #include "State.h"
 #include "db/data.h"
+#include "net/JsonKeys.h"
 #include "states/ina/InaStateMachine.h"
 #include "states/ina/InaStateMachines.h"
 
@@ -58,7 +59,7 @@ uint8_t State::checkAndprintSensorAddresses()
 
 void State::printStatus(gson::Str &printer) const
 {
-    printer["status"] = getDescription();
+    printer[JKEY::STATUS] = getDescription();
 }
 
 String State::getSensorTabLabels() const
