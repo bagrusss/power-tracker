@@ -4,8 +4,17 @@ Generate BuildInfo.h and BuildInfo.cpp from platformio.ini and environment varia
 This script is intended to be run as a pre-build script in PlatformIO.
 
 Automatically increments build_number on each run.
+
+Usage:
+    python generate_buildinfo.py                  # uses version from platformio.ini
+    python generate_buildinfo.py -v 1.0.5         # overrides version via CLI
+    python generate_buildinfo.py --version 2.0.0  # overrides version via CLI
+
+When --version is provided, it overrides platformio.ini [env] version AND
+updates platformio.ini with the new value for persistence.
 """
 
+import argparse
 import configparser
 import os
 import re
@@ -75,13 +84,52 @@ def increment_build_number(config):
     return new_number
 
 
+def update_version_in_ini(version):
+    """
+    Update version in platformio.ini.
+    Uses regex to preserve formatting (spaces, comments).
+    """
+    raw = PLATFORMIO_INI.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r'^(\s*version\s*=\s*)(\S+)(\s*;.*)?$',
+        re.MULTILINE
+    )
+    new_raw, count = pattern.subn(
+        lambda m: m.group(1) + version + (m.group(3) or ""),
+        raw,
+        count=1
+    )
+    if count == 0:
+        print("Warning: version not found in platformio.ini, appending")
+        new_raw += f"\nversion = {version}\n"
+    PLATFORMIO_INI.write_text(new_raw, encoding="utf-8")
+
+
 def main():
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description="Generate BuildInfo.h and BuildInfo.cpp for PlatformIO"
+    )
+    parser.add_argument(
+        "-v", "--version",
+        type=str,
+        default=None,
+        help="Override version string (e.g. 1.0.5). If provided, also updates platformio.ini"
+    )
+    args, unknown = parser.parse_known_args()
+
     # Read platformio.ini
     config = configparser.ConfigParser()
     config.read(PLATFORMIO_INI)
 
-    # Get version, build_type from [env] section
-    version = config.get("env", "version", fallback="1.0.0")
+    # Get version: CLI argument takes priority over platformio.ini [env] section
+    if args.version is not None:
+        version = args.version
+        update_version_in_ini(version)
+        print(f"Version overridden via CLI: {version}")
+    else:
+        version = config.get("env", "version", fallback="1.0.0")
+
     build_type = config.get("env", "build_type", fallback="debug")
 
     # Auto-increment build_number
