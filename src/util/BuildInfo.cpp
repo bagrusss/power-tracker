@@ -26,11 +26,7 @@ namespace BuildInfo
 
     void getFullVersion(char *buf, const size_t &size)
     {
-        char ver[16], plat[16], type[16];
-        strcpy_P(ver, PSTR(BUILD_VERSION));
-        strcpy_P(plat, PSTR(BUILD_PLATFORM));
-        strcpy_P(type, PSTR(BUILD_TYPE));
-        snprintf(buf, size, "%s_%s_%s_%d", ver, plat, type, BUILD_NUMBER);
+        snprintf(buf, size, "%s_%s_%s_%d",
+                 BUILD_VERSION, BUILD_PLATFORM, BUILD_TYPE, BUILD_NUMBER);
     }
-
 }
