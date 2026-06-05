@@ -3,12 +3,13 @@
 Generate BuildInfo.h and BuildInfo.cpp from platformio.ini and environment variables.
 This script is intended to be run as a pre-build script in PlatformIO.
 
-Automatically increments build_number on each run.
+Automatically increments build_number on each run (unless --no-increment is passed).
 
 Usage:
     python generate_buildinfo.py                  # uses version from platformio.ini
     python generate_buildinfo.py -v 1.0.5         # overrides version via CLI
     python generate_buildinfo.py --version 2.0.0  # overrides version via CLI
+    python generate_buildinfo.py --no-increment   # skips auto-increment of build_number
 
 When --version is provided, it overrides platformio.ini [env] version AND
 updates platformio.ini with the new value for persistence.
@@ -42,14 +43,14 @@ def get_platform_from_env(env_name, config):
     if section in config:
         platform_spec = config.get(section, "platform", fallback="")
         if "espressif8266" in platform_spec:
-            return "ESP8266"
+            return "esp8266"
         elif "espressif32" in platform_spec:
-            return "ESP32"
+            return "esp32"
     # Fallback to name matching
     if "nodemcu" in env_name:
-        return "ESP8266"
+        return "esp8266"
     elif "esp32" in env_name:
-        return "ESP32"
+        return "esp32"
     return "Unknown"
 
 
@@ -116,6 +117,16 @@ def main():
         default=None,
         help="Override version string (e.g. 1.0.5). If provided, also updates platformio.ini"
     )
+    parser.add_argument(
+        "--no-increment",
+        action="store_true",
+        help="Skip auto-increment of build_number (use current value as-is)"
+    )
+    parser.add_argument(
+        "--no-persist",
+        action="store_true",
+        help="Do not update platformio.ini with the CLI version (use for release builds)"
+    )
     args, unknown = parser.parse_known_args()
 
     # Read platformio.ini
@@ -125,15 +136,20 @@ def main():
     # Get version: CLI argument takes priority over platformio.ini [env] section
     if args.version is not None:
         version = args.version
-        update_version_in_ini(version)
-        print(f"Version overridden via CLI: {version}")
+        if not args.no_persist:
+            update_version_in_ini(version)
+        print(f"Version overridden via CLI: {version}" + (" (not persisted)" if args.no_persist else ""))
     else:
         version = config.get("env", "version", fallback="1.0.0")
 
     build_type = config.get("env", "build_type", fallback="debug")
 
-    # Auto-increment build_number
-    build_number = increment_build_number(config)
+    # Auto-increment build_number (or use current value if --no-increment)
+    if args.no_increment:
+        build_number = int(config.get("env", "build_number", fallback="1"))
+        print(f"Build number (no increment): {build_number}")
+    else:
+        build_number = increment_build_number(config)
 
     # Determine platform from PLATFORMIO_ENV environment variable
     env_name = os.getenv("PLATFORMIO_ENV", "")
@@ -145,10 +161,10 @@ def main():
             if section.startswith("env:"):
                 platform_spec = config.get(section, "platform", fallback="")
                 if "espressif8266" in platform_spec:
-                    platform = "ESP8266"
+                    platform = "esp8266"
                     break
                 elif "espressif32" in platform_spec:
-                    platform = "ESP32"
+                    platform = "esp32"
                     break
 
     # Generate BuildInfo.h content (declarations only)

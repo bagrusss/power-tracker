@@ -7,7 +7,7 @@
 #endif
 
 #ifndef BUILD_PLATFORM
-#define BUILD_PLATFORM "ESP8266"
+#define BUILD_PLATFORM "esp8266"
 #endif
 
 #ifndef BUILD_TYPE
