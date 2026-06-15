@@ -550,35 +550,29 @@ curl -X GET "192.168.241.177/all"
 ### Механизм работы
 
 1. МК периодически проверяет наличие новой версии, обращаясь по URL, указанному в настройках.
-2. Сервер возвращает JSON-файл с информацией о версии (см. [`firmware_info.json`](firmware_info.json)).
+2. Сервер возвращает JSON-файл с информацией о версии (см. [`ota.json`](ota.json)).
 3. МК сравнивает номер сборки (`buildNumber`) с текущим. Если номер выше — скачивает бинарник и устанавливает его.
 4. Прогресс установки отображается на дисплее и в веб-интерфейсе.
 
-### Структура firmware_info.json
+### Структура ota.json
 
 ```json
 {
-  "buildType": "release",
   "version": "1.0.0",
   "buildNumber": 2,
-  "esp8266": "http://example.com/firmware.bin",
-  "releaseNotes": "Bug fixes and improvements",
-  "timestamp": "2025-12-25T20:00:00Z"
+  "esp8266": "http://example.com/firmware.bin"
 }
 ```
 
 Поля:
-- `buildType` — тип сборки (`release`, `beta`, `dev`)
 - `version` — версия в формате SemVer
 - `buildNumber` — номер сборки (инкрементальный, для сравнения)
-- `esp8266` — прямая ссылка на бинарный файл прошивки
-- `releaseNotes` — описание изменений
-- `timestamp` — дата публикации
+- `esp8266` — прямая ссылка на бинарный файл прошивки (ключ платформы в нижнем регистре, для ESP32: `esp32`)
 
 ### Настройка OTA
 
 Настройка производится в веб-интерфейсе, раздел **Updates**:
-1. Указать URL репозитория с `firmware_info.json`
+1. Указать URL репозитория с `ota.json`
 2. Выбрать интервал проверки (1ч, 6ч, 12ч, 24ч)
 3. Включить автообновление
 
@@ -838,14 +832,11 @@ echo "Результат сохранён в result_${SERIAL}.json"
 # Простейший вариант — Python HTTP-сервер
 mkdir -p /var/www/ota
 cp firmware.bin /var/www/ota/
-cat > /var/www/ota/firmware_info.json << EOF
+cat > /var/www/ota/ota.json << EOF
 {
-  "buildType": "release",
   "version": "1.0.1",
   "buildNumber": 3,
-  "esp8266": "http://your-server:8090/firmware.bin",
-  "releaseNotes": "Bug fixes and performance improvements",
-  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  "esp8266": "http://your-server:8090/firmware.bin"
 }
 EOF
 
@@ -853,7 +844,7 @@ EOF
 cd /var/www/ota && python3 -m http.server 8090
 ```
 
-В настройках МК (раздел **Updates**) укажите URL: `http://your-server:8090/firmware_info.json`
+В настройках МК (раздел **Updates**) укажите URL: `http://your-server:8090/ota.json`
 
 ### Организация фермы устройств
 
