@@ -75,12 +75,6 @@ namespace UiTitles
         DEFINE_TITLE(OTA_FAILED, "UPD: Failed!");
     }
 
-    namespace FileNames
-    {
-        DEFINE_TITLE(DATA_DB, "/data.db");
-        DEFINE_TITLE(SETTINGS_PREFIX, "/settings_0x");
-    }
-
     namespace Network
     {
         DEFINE_TITLE(TMP_WIFI_NAME, "PT_");

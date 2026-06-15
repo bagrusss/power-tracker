@@ -130,7 +130,7 @@ void setup()
   Serial.begin(115200);
   Serial.println();
 
-  auto db = new GyverDBFile(&LittleFS, StrUtils::read(UiTitles::FileNames::DATA_DB));
+  auto db = new GyverDBFile(&LittleFS, "/data.db");
   initDb(db);
 
   auto logger = &Serial;
