@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 #ifndef BUILD_VERSION
-#define BUILD_VERSION "1.0.7"
+#define BUILD_VERSION "1.0.8"
 #endif
 
 #ifndef BUILD_PLATFORM
@@ -15,7 +15,7 @@
 #endif
 
 #ifndef BUILD_NUMBER
-#define BUILD_NUMBER 10
+#define BUILD_NUMBER 11
 #endif
 
 namespace BuildInfo {

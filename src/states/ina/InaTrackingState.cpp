@@ -157,16 +157,15 @@ void InaTrackingState::reset()
     endTime = startTime;
     lastTime = startTime;
 
-    minVoltage = sensor->getLoadVoltage(false);
+    currentVoltage = sensor->getLoadVoltage();
+    currentCurrent = abs(sensor->getCurrent());
+    currentPower = sensor->getPower();
 
-    maxCurrent = 0;
-    maxPower = 0;
+    minVoltage = currentVoltage;
+    maxCurrent = currentCurrent;
+    maxPower = currentPower;
     totalPower = 0;
     totalCurrent = 0;
-
-    currentVoltage = minVoltage;
-    currentCurrent = 0;
-    currentPower = 0;
 
     measurementInterval = context->db->get(BAT_MONITOR_CONFIG::measurement_interval);
 }
