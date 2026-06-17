@@ -153,3 +153,14 @@ void InaStateMachines::getAllSensorsInfo(gson::Str &doc) const
     }
     doc(']');
 }
+
+void InaStateMachines::handleAll() const
+{
+    for (const auto &pair : inaStateMachines)
+    {
+        if (pair.second)
+        {
+            pair.second->handle();
+        }
+    }
+}
