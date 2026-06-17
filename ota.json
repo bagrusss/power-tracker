@@ -1,5 +1,5 @@
 {
-    "version": "1.0.6",
-    "buildNumber": 9,
-    "esp8266": "https://github.com/bagrusss/power-tracker/releases/download/v1.0.6-b9/esp8266_1.0.6_b9.bin"
+    "version": "1.0.7",
+    "buildNumber": 10,
+    "esp8266": "https://github.com/bagrusss/power-tracker/releases/download/v1.0.7-b10/esp8266_1.0.7_b10.bin"
 }
