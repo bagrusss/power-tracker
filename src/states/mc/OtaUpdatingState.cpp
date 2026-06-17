@@ -109,8 +109,7 @@ void OtaUpdatingState::onUpgradeEnd(const bool success)
     lastFilledWidth = 0;
 
     context->display->withUpdate([this, success](PixelDisplay& d) {
-        int line3Y = Lines::L3 * 8;
-        d.clearRect(0, line3Y, 128, 16);
+        d.clearRect(0, Lines::L3 * 8, 128, 16);
         d.selectLine(Lines::L3);
         d.print(success ? UiTitles::Messages::OTA_SUCCESS : UiTitles::Messages::OTA_FAILED);
     });

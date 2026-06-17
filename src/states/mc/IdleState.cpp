@@ -85,11 +85,12 @@ void IdleState::buildUi(sets::Builder &b)
             }
         }
 
-        if (b.Button(UiTitles::UiButtons::SETTINGS))
-        {
-            stateMachine->switchState(StateType::Settings);
-            b.reload();
-        }
+    }
+
+    if (b.Button(UiTitles::UiButtons::SETTINGS))
+    {
+        stateMachine->switchState(StateType::Settings);
+        b.reload();
     }
 }
 
