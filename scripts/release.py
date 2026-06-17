@@ -28,6 +28,7 @@ Output:
 
 import argparse
 import configparser
+import hashlib
 import os
 import subprocess
 import sys
@@ -144,7 +145,34 @@ def get_prev_tag():
     return tags[0] if tags else None
 
 
-def generate_release_notes(version, build_number, env_name, platform_lower):
+def compute_checksums(filepath):
+    """Compute MD5, SHA-1, and SHA-256 checksums for a file.
+
+    Returns:
+        dict with keys 'md5', 'sha1', 'sha256' — hex digest strings.
+    """
+    md5 = hashlib.md5()
+    sha1 = hashlib.sha1()
+    sha256 = hashlib.sha256()
+    
+    with open(filepath, "rb") as f:
+        while True:
+            chunk = f.read(8192)
+            if not chunk:
+                break
+            md5.update(chunk)
+            sha1.update(chunk)
+            sha256.update(chunk)
+    
+    return {
+        "md5": md5.hexdigest(),
+        "sha1": sha1.hexdigest(),
+        "sha256": sha256.hexdigest(),
+    }
+
+
+def generate_release_notes(version, build_number, env_name, platform_lower,
+                           firmware_bin=None, ota_path=None, bin_name="firmware.bin"):
     """Generate release notes markdown. Uses release_notes.md if present, otherwise git log."""
     notes = f"""## v{version}-b{build_number}
 
@@ -184,6 +212,27 @@ def generate_release_notes(version, build_number, env_name, platform_lower):
                 notes += f"- {line}\n"
         else:
             notes += "- No changes recorded\n"
+
+    # Compute checksums for assets
+    assets = []
+    if firmware_bin and Path(firmware_bin).exists():
+        c = compute_checksums(firmware_bin)
+        assets.append((bin_name, c))
+    if ota_path and Path(ota_path).exists():
+        c = compute_checksums(ota_path)
+        assets.append(("ota.json", c))
+
+    if assets:
+        notes += "\n### Assets\n\n"
+        notes += "| File | MD5 | SHA-1 | SHA-256 |\n"
+        notes += "|---|---|---|---|\n"
+        for filename, checksums in assets:
+            notes += (
+                f"| `{filename}` | `{checksums['md5']}` "
+                f"| `{checksums['sha1']}` "
+                f"| `{checksums['sha256']}` |\n"
+            )
+        notes += "\n"
 
     notes += f"\n### Download\n- [`{platform_lower}_{version}-b{build_number}.bin`](https://github.com/bagrusss/power-tracker/releases/download/v{version}-b{build_number}/{platform_lower}_{version}-b{build_number}.bin)\n"
     notes += f"- [`ota.json`](https://github.com/bagrusss/power-tracker/releases/download/v{version}-b{build_number}/ota.json)\n"
@@ -330,7 +379,11 @@ def create_release(env_name, version, dry_run=False, skip_push=False, skip_gh_re
             print(f"  gh release create {tag} '{firmware_bin}#{bin_name}' '{ota_path}' --title 'v{version}-b{build_number}' --notes-from-tag")
             return
 
-        release_notes = generate_release_notes(version, build_number, env_name, platform_lower)
+        release_notes = generate_release_notes(
+            version, build_number, env_name, platform_lower,
+            firmware_bin=firmware_bin, ota_path=ota_path,
+            bin_name=bin_name,
+        )
         notes_file = PROJECT_DIR / ".release_notes.md"
         notes_file.write_text(release_notes, encoding="utf-8")
 
