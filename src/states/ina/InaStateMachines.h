@@ -25,6 +25,7 @@ public:
     bool isAnySensorBusy() const;
 
     void getAllSensorsInfo(gson::Str &doc) const;
+    void handleAll() const;
 
 private:
     Context *const context;

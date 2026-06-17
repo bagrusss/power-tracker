@@ -185,7 +185,7 @@ def generate_release_notes(version, build_number, env_name, platform_lower):
         else:
             notes += "- No changes recorded\n"
 
-    notes += f"\n### Download\n- [`{platform_lower}_{version}_b{build_number}.bin`](https://github.com/bagrusss/power-tracker/releases/download/v{version}-b{build_number}/{platform_lower}_{version}_b{build_number}.bin)\n"
+    notes += f"\n### Download\n- [`{platform_lower}_{version}-b{build_number}.bin`](https://github.com/bagrusss/power-tracker/releases/download/v{version}-b{build_number}/{platform_lower}_{version}-b{build_number}.bin)\n"
     notes += f"- [`ota.json`](https://github.com/bagrusss/power-tracker/releases/download/v{version}-b{build_number}/ota.json)\n"
     return notes
 
@@ -214,7 +214,7 @@ def generate_ota_json(version, build_number, env_name):
     platform_display = get_platform_display_from_config(config, env_name)
 
     tag = f"v{version}-b{build_number}"
-    bin_name = f"{platform_lower}_{version}_b{build_number}.bin"
+    bin_name = f"{platform_lower}_{version}-b{build_number}.bin"
     firmware_url = f"https://github.com/bagrusss/power-tracker/releases/download/{tag}/{bin_name}"
 
     ota_data = {
@@ -280,7 +280,7 @@ def create_release(env_name, version, dry_run=False, skip_push=False, skip_gh_re
     platform_lower = get_platform_string_from_config(config, env_name)
 
     tag = f"v{version}-b{build_number}"
-    bin_name = f"{platform_lower}_{version}_b{build_number}.bin"
+    bin_name = f"{platform_lower}_{version}-b{build_number}.bin"
 
     print(f"\n\033[1;33m=== Release Summary ===\033[0m")
     print(f"  Platform:     {platform_lower} ({env_name})")
@@ -397,7 +397,7 @@ def main():
     if args.dry_run:
         platform_lower = get_platform_string_from_config(config, args.env)
         tag = f"v{version}-b{build_number}"
-        bin_name = f"{platform_lower}_{version}_b{build_number}.bin"
+        bin_name = f"{platform_lower}_{version}-b{build_number}.bin"
         print(f"\n\033[1;33m[DRY RUN]\033[0m")
         print(f"  Would build env:    {args.env}")
         print(f"  Would create tag:   {tag}")

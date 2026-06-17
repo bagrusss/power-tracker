@@ -15,7 +15,7 @@
 #endif
 
 #ifndef BUILD_NUMBER
-#define BUILD_NUMBER 11
+#define BUILD_NUMBER 12
 #endif
 
 namespace BuildInfo {

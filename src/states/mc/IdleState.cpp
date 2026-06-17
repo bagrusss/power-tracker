@@ -160,10 +160,7 @@ void IdleState::updateLedBlink(const uint8_t &activeSensors)
 
 void IdleState::handle()
 {
-    if (activeInaMachine)
-    {
-        activeInaMachine->handle();
-    }
+    context->inaMachines->handleAll();
 }
 
 void IdleState::onSensorStatusChanged(const uint8_t address, const bool isBusy)
